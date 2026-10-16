@@ -1,0 +1,45 @@
+Business Logic:
+The user accesses a start page which informs him that the VOIS Challenge is a maze and he should try his luck in reaching its center.
+The user must press the "Explore" button to start a new game, which will redirect to a new page.
+The application will generate a random maze in a rectangular shape, having a single correct path.
+The path starts from the edges of the maze from a single entry point and the destination represents a point near the center of the maze.
+The entry point will have an image next to it on the outside of the maze with the logo for CodeCamp Iasi 2026. The destination will be the Vodafone Intelligent Solutions logo.
+Some of the deadlocks inside the maze will have a "coffee" or "coffee station" SVG displayed next to the them.
+The user will be able to drag the pointer which uses a user or play SVG graphic inside the maze to go from the start to the end point.
+When the player reaches the destination, a popup will be displayed to notify the user that they have reached the end of the maze and congratulate him on the success.
+The popup will display how long it took the player to reach the center and how many wrong turns he took.
+The player can choose at any time to abort the current game, which will display a popup to inform him how long he tried to complete the maze and confirm that he wants to exit the challenge.
+When the player confirms to quit the challenge, he will be redirected to the start page.
+
+Technology:
+React web application with a NodeJS backend and a Postgresql supporting database, connected via typeorm.
+
+Look and feel:
+The application should use a dark theme.
+The application should be minimalistic, using clean visuals and SVG graphics stored directly in the application assets.
+Player interactions should be highlighted to ensure the user notices how he's supposed to interact with the application.
+Success and abort visuals should be interactive.
+
+Performance:
+API communication should be kept at a minimum, to avoid network delays due to slow connection.
+
+Deployment:
+Application will be deployed using https://render.com/ web service free tier.
+
+Database logic: 
+Store all games, with the fields "id", "startDate", "endDate", "won", "elapsedTime".
+When the user starts a game, create a new row with the "id" unique identifier and "startDate".
+When the user reaches the end of a maze, store the "endDate", "won" = 1 and "elapsedTime" fields based on his results.
+When the user chooses to abort a game, store the "endDate", "won" = 0 and "elapsedTime" fields based on his results.
+
+
+--------------------------------------
+
+
+Changes:
+
+Make the interface more glossy and colorful, it is too minimalistic. Keep using the dark theme.
+Allow the user to choose the player icon before the game begins. The options should be between a cat and a dog. Use SVGs for the possible player icons.
+When the user advances through the maze, a colourful trail should appear in the cells which were already visited.
+The trail should use a 3-color horizontal gradient with colors: #E60000 for 60%, #9C2AA0 for 30% and #000000 for 10%. The gradient should be applied to each cell and follow the direction of the player icon.
+The VOIS and CodeCamp icons should be about 100px large to ensure they are fully legible. The maze paths should remain the same width.

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <rect width="80" height="80" rx="40" fill="#e60000"/>
+  <text x="40" y="36" font-family="monospace" font-size="8" fill="#ffffff" text-anchor="middle" font-weight="bold">VOIS</text>
+  <text x="40" y="50" font-family="monospace" font-size="6" fill="#ffffff" text-anchor="middle">Intelligent</text>
+  <text x="40" y="62" font-family="monospace" font-size="6" fill="#ffffff" text-anchor="middle">Solutions</text>
+</svg>

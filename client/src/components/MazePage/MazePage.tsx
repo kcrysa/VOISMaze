@@ -1,0 +1,153 @@
+import React, { useState, useEffect, useMemo } from "react";
+import { MazeGrid } from "./MazeGrid";
+import { PlayerToken } from "./PlayerToken";
+import { MovementToggle } from "./MovementToggle";
+import { SuccessPopup } from "../popups/SuccessPopup";
+import { AbortPopup } from "../popups/AbortPopup";
+import { Button } from "../ui/Button";
+import { generateMaze } from "../../utils/mazeAlgorithm";
+import { formatTime } from "../../utils/mazeHelpers";
+import { MAZE_ROWS, MAZE_COLS, CELL_SIZE } from "../../config/mazeConfig";
+import { useGameSession } from "../../hooks/useGameSession";
+import { useGameTimer } from "../../hooks/useGameTimer";
+import { usePlayerMovement } from "../../hooks/usePlayerMovement";
+import type { PlayerIcon } from "../StartPage/StartPage";
+import styles from "./MazePage.module.css";
+
+interface MazePageProps {
+  onExit: () => void;
+  playerIcon: PlayerIcon;
+}
+
+/**
+ * Padding (in SVG units) added around the maze grid by MazeGrid so that the
+ * entry/destination logos are visible outside the border. Must match the value
+ * in MazeGrid.tsx: `const padding = cellSize * 2`.
+ */
+const GRID_PADDING = CELL_SIZE * 2;
+
+export const MazePage: React.FC<MazePageProps> = ({ onExit, playerIcon }) => {
+  const [movementMode, setMovementMode] = useState<"drag" | "click">("drag");
+  const [gameStatus, setGameStatus] = useState<"playing" | "won" | "aborting">(
+    "playing",
+  );
+
+  const { startGame, completeGame, abortGame, gameId } = useGameSession();
+  const { elapsedSeconds, start, pause } = useGameTimer();
+
+  // Generate maze exactly once per game session
+  const mazeData = useMemo(() => generateMaze(MAZE_ROWS, MAZE_COLS), []);
+
+  const {
+    playerPos,
+    wrongTurns,
+    visitedPath,
+    handleDragEnd,
+    handleCellClick,
+    isAtDestination,
+  } = usePlayerMovement(
+    mazeData.grid,
+    mazeData.entry,
+    mazeData.destination,
+    movementMode,
+  );
+
+  // Start API session + timer on mount
+  useEffect(() => {
+    startGame().then(() => start());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Detect win condition
+  useEffect(() => {
+    if (isAtDestination && gameStatus === "playing") {
+      pause();
+      setGameStatus("won");
+      if (gameId) completeGame(gameId, elapsedSeconds);
+    }
+    // elapsedSeconds intentionally omitted — we want the value frozen at the moment of win
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAtDestination, gameStatus]);
+
+  const handleQuit = () => {
+    pause();
+    setGameStatus("aborting");
+  };
+
+  const handleKeepGoing = () => {
+    setGameStatus("playing");
+    start();
+  };
+
+  const handleConfirmExit = () => {
+    if (gameId) abortGame(gameId, elapsedSeconds);
+    onExit();
+  };
+
+  // Total SVG dimensions (maze + padding on all sides for logos)
+  const svgWidth = MAZE_COLS * CELL_SIZE + GRID_PADDING * 2;
+  const svgHeight = MAZE_ROWS * CELL_SIZE + GRID_PADDING * 2;
+
+  return (
+    <div className={styles.page}>
+      {/* ── HUD ── */}
+      <div className={styles.hud}>
+        <div className={styles.timer}>{formatTime(elapsedSeconds)}</div>
+        <MovementToggle mode={movementMode} onChange={setMovementMode} />
+        <Button variant="ghost" onClick={handleQuit}>
+          Quit
+        </Button>
+      </div>
+
+      {/* ── Maze area ── */}
+      <div className={styles.mazeContainer}>
+        {/*
+          Single SVG contains both the grid and the player token.
+          This avoids z-index / pointer-event stacking issues between two overlaid SVGs.
+        */}
+        <svg
+          width={svgWidth}
+          height={svgHeight}
+          viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+          style={{ display: "block", maxWidth: "100%", maxHeight: "100%" }}
+        >
+          <MazeGrid
+            grid={mazeData.grid}
+            cellSize={CELL_SIZE}
+            entry={mazeData.entry}
+            destination={mazeData.destination}
+            visitedPath={visitedPath}
+            onCellClick={movementMode === "click" ? handleCellClick : undefined}
+          />
+          {/* Player token rendered in the same SVG so it naturally sits above walls */}
+          <PlayerToken
+            row={playerPos.row}
+            col={playerPos.col}
+            cellSize={CELL_SIZE}
+            gridPadding={GRID_PADDING}
+            onDragEnd={handleDragEnd}
+            movementMode={movementMode}
+            icon={playerIcon}
+          />
+        </svg>
+      </div>
+
+      {/* ── Popups ── */}
+      {gameStatus === "won" && (
+        <SuccessPopup
+          elapsedSeconds={elapsedSeconds}
+          wrongTurns={wrongTurns}
+          onClose={onExit}
+            icon={playerIcon}
+        />
+      )}
+      {gameStatus === "aborting" && (
+        <AbortPopup
+          elapsedSeconds={elapsedSeconds}
+          onKeepGoing={handleKeepGoing}
+          onConfirmExit={handleConfirmExit}
+        />
+      )}
+    </div>
+  );
+};
