@@ -23,6 +23,8 @@ interface MazeGridProps {
   visitedPath: Pos[];
   /** Called in click-to-move mode when the user clicks a cell */
   onCellClick?: (row: number, col: number) => void;
+  onCellPointerDown?: (row: number, col: number) => void;
+  onCellPointerEnter?: (row: number, col: number) => void;
 }
 
 export const MazeGrid: React.FC<MazeGridProps> = ({
@@ -32,6 +34,8 @@ export const MazeGrid: React.FC<MazeGridProps> = ({
   destination,
   visitedPath,
   onCellClick,
+  onCellPointerDown,
+  onCellPointerEnter,
 }) => {
   const rows = grid.length;
   const cols = grid[0].length;
@@ -83,13 +87,16 @@ export const MazeGrid: React.FC<MazeGridProps> = ({
           return (
             <rect
               key={`bg-${r}-${c}`}
+              data-cell={`${r},${c}`}
               x={ox + c * cellSize}
               y={oy + r * cellSize}
               width={cellSize}
               height={cellSize}
               fill={fill}
               onClick={() => onCellClick?.(r, c)}
-              style={{ cursor: onCellClick ? "pointer" : "default" }}
+              onPointerDown={() => onCellPointerDown?.(r, c)}
+              onPointerEnter={() => onCellPointerEnter?.(r, c)}
+              style={{ cursor: "pointer", touchAction: "none" }}
             />
           );
         }),
@@ -106,6 +113,7 @@ export const MazeGrid: React.FC<MazeGridProps> = ({
               key={`dec-${r}-${c}`}
               transform={`translate(${cx}, ${cy})`}
               opacity={cell.pathCoffee ? 1 : 0.8}
+              style={{ pointerEvents: "none" }}
             >
               <CoffeeIcon onHover={() => {}} />
             </g>
@@ -114,7 +122,10 @@ export const MazeGrid: React.FC<MazeGridProps> = ({
       )}
 
       {/* ── Destination logo (VOIS) ── */}
-      <g transform={`translate(${destLogoX}, ${destLogoY})`}>
+      <g
+        transform={`translate(${destLogoX}, ${destLogoY})`}
+        style={{ pointerEvents: "none" }}
+      >
         <VOISIcon size={`${LOGO_SIZE}px`} />
       </g>
 
@@ -182,12 +193,19 @@ export const MazeGrid: React.FC<MazeGridProps> = ({
             );
           }
 
-          return <g key={`walls-${r}-${c}`}>{wallLines}</g>;
+          return (
+            <g key={`walls-${r}-${c}`} style={{ pointerEvents: "none" }}>
+              {wallLines}
+            </g>
+          );
         }),
       )}
 
       {/* ── Entry logo (CodeCamp) — drawn last so it renders above walls ── */}
-      <g transform={`translate(${entryLogoX}, ${entryLogoY})`}>
+      <g
+        transform={`translate(${entryLogoX}, ${entryLogoY})`}
+        style={{ pointerEvents: "none" }}
+      >
         <CodeCampIcon size={`${LOGO_SIZE}px`} />
       </g>
     </g>

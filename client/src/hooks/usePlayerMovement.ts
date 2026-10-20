@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import type { Cell } from '../utils/mazeAlgorithm';
 import { getReachableNeighbors } from '../utils/mazeHelpers';
 
@@ -38,6 +38,7 @@ export function usePlayerMovement(
   movementMode: 'drag' | 'click',
 ) {
   const [playerPos, setPlayerPos] = useState<Pos>({ row: entry.row, col: entry.col });
+  const playerPosRef = useRef<Pos>({ row: entry.row, col: entry.col });
   const [wrongTurns, setWrongTurns] = useState(0);
 
   /**
@@ -55,9 +56,6 @@ export function usePlayerMovement(
    */
   const [visitedDirections, setVisitedDirections] = useState<Map<string, TrailDirection>>(() => {
     const initial = new Map<string, TrailDirection>();
-    // Give the starting cell a direction based on the entry side (rotate 90°)
-    // entry.side is the maze border side the player starts from; treat it as
-    // the direction the player came from.
     const sideToDir: Record<string, TrailDirection> = {
       top: 'top', bottom: 'bottom', left: 'left', right: 'right',
     };
@@ -74,51 +72,57 @@ export function usePlayerMovement(
   /**
    * Move the player one step to (targetRow, targetCol).
    * Validates wall collision and updates the wrong-turn counter on backtrack.
+   * Returns true if movement succeeded, false if invalid or blocked by a wall.
    */
   const movePlayer = useCallback(
-    (targetRow: number, targetCol: number) => {
-      setPlayerPos(currentPos => {
-        // Validate: target must be a direct reachable neighbour of current position
-        const reachable = getReachableNeighbors(grid, currentPos.row, currentPos.col);
-        const isValid = reachable.some(n => n.row === targetRow && n.col === targetCol);
-        if (!isValid) return currentPos; // No-op
+    (targetRow: number, targetCol: number): boolean => {
+      const currentPos = playerPosRef.current;
+      if (currentPos.row === targetRow && currentPos.col === targetCol) return false;
 
-        setVisitedPath(prevPath => {
-          const newPath = [...prevPath];
-          const secondLast = newPath.length >= 2 ? newPath[newPath.length - 2] : null;
-          const isBacktrack =
-            secondLast !== null &&
-            secondLast.row === targetRow &&
-            secondLast.col === targetCol;
+      // Validate: target must be a direct reachable neighbour of current position
+      const reachable = getReachableNeighbors(grid, currentPos.row, currentPos.col);
+      const isValid = reachable.some(n => n.row === targetRow && n.col === targetCol);
+      if (!isValid) return false;
 
-          if (isBacktrack) {
-            // The player is stepping back to the previous cell.
-            // If the cell we're leaving was a dead-end, count it as a wrong turn.
-            const leavingCell = grid[currentPos.row][currentPos.col];
-            if (leavingCell.isDeadEnd) {
-              setWrongTurns(w => w + 1);
-            }
-            // Remove trail from the cell we're leaving
-            setVisitedDirections(prev => {
-              const next = new Map(prev);
-              next.delete(posKey(currentPos.row, currentPos.col));
-              return next;
-            });
-            newPath.pop();
-          } else {
-            const dir = entryDirection(currentPos, { row: targetRow, col: targetCol });
-            setVisitedDirections(prev => {
-              const next = new Map(prev);
-              next.set(posKey(targetRow, targetCol), dir);
-              return next;
-            });
-            newPath.push({ row: targetRow, col: targetCol });
+      // Update ref synchronously so subsequent events in rapid succession have latest position
+      playerPosRef.current = { row: targetRow, col: targetCol };
+      setPlayerPos({ row: targetRow, col: targetCol });
+
+      setVisitedPath(prevPath => {
+        const newPath = [...prevPath];
+        const secondLast = newPath.length >= 2 ? newPath[newPath.length - 2] : null;
+        const isBacktrack =
+          secondLast !== null &&
+          secondLast.row === targetRow &&
+          secondLast.col === targetCol;
+
+        if (isBacktrack) {
+          // The player is stepping back to the previous cell.
+          // If the cell we're leaving was a dead-end, count it as a wrong turn.
+          const leavingCell = grid[currentPos.row][currentPos.col];
+          if (leavingCell.isDeadEnd) {
+            setWrongTurns(w => w + 1);
           }
-          return newPath;
-        });
-
-        return { row: targetRow, col: targetCol };
+          // Remove trail from the cell we're leaving
+          setVisitedDirections(prev => {
+            const next = new Map(prev);
+            next.delete(posKey(currentPos.row, currentPos.col));
+            return next;
+          });
+          newPath.pop();
+        } else {
+          const dir = entryDirection(currentPos, { row: targetRow, col: targetCol });
+          setVisitedDirections(prev => {
+            const next = new Map(prev);
+            next.set(posKey(targetRow, targetCol), dir);
+            return next;
+          });
+          newPath.push({ row: targetRow, col: targetCol });
+        }
+        return newPath;
       });
+
+      return true;
     },
     [grid],
   );
@@ -227,6 +231,7 @@ export function usePlayerMovement(
 
   return {
     playerPos,
+    playerPosRef,
     wrongTurns,
     visitedPath,
     visitedDirections,
