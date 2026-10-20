@@ -95,7 +95,7 @@ export const MazeGrid: React.FC<MazeGridProps> = ({
         }),
       )}
 
-      {/* ── Coffee decorations (dead-end cells) ── */}
+      {/* ── Coffee decorations (dead-end cells and correct path cells) ── */}
       {grid.map((row, r) =>
         row.map((cell, c) => {
           if (!cell.decoration) return null;
@@ -105,7 +105,7 @@ export const MazeGrid: React.FC<MazeGridProps> = ({
             <g
               key={`dec-${r}-${c}`}
               transform={`translate(${cx}, ${cy})`}
-              opacity={0.8}
+              opacity={cell.pathCoffee ? 1 : 0.8}
             >
               <CoffeeIcon onHover={() => {}} />
             </g>

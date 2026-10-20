@@ -27,4 +27,8 @@ export class Game {
   /** Elapsed seconds at end of game */
   @Column({ name: 'elapsed_time', type: 'integer', nullable: true })
   elapsedTime!: number | null;
+
+  /** Player icon selected at beginning of game: 'cat' | 'dog' */
+  @Column({ name: 'player_icon', type: 'varchar', length: 10, nullable: true })
+  playerIcon!: string | null;
 }

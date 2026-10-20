@@ -23,6 +23,14 @@ app.use(express.json());
 app.use(express.static(path.resolve(process.cwd(), "../client/dist")));
 
 // Routes
+app.get("/api/config", (_req, res) => {
+  const nodeEnv = process.env.NODE_ENV || "development";
+  res.json({
+    nodeEnv,
+    showMovementToggle: nodeEnv === "development",
+  });
+});
+
 app.use("/api/games", gamesRouter);
 
 app.get("*", (req, res) => {

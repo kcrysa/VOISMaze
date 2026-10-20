@@ -1,5 +1,9 @@
-import { COFFEE_DECORATION_RATIO, DESTINATION_RADIUS } from '../config/mazeConfig';
-import { getReachableNeighbors } from './mazeHelpers';
+import {
+  COFFEE_DECORATION_RATIO,
+  DESTINATION_RADIUS,
+  PATH_COFFEE_COUNT,
+} from '../config/mazeConfig';
+import { getReachableNeighbors, bfsPath } from './mazeHelpers';
 
 export interface Cell {
   row: number;
@@ -11,6 +15,7 @@ export interface Cell {
   isDeadEnd: boolean;
   branchLength: number;
   decoration: 'coffee' | null;
+  pathCoffee?: boolean;
 }
 
 export interface MazeData {
@@ -19,7 +24,11 @@ export interface MazeData {
   destination: { row: number; col: number };
 }
 
-export function generateMaze(rows: number, cols: number): MazeData {
+export function generateMaze(
+  rows: number,
+  cols: number,
+  pathCoffeeCount: number = PATH_COFFEE_COUNT,
+): MazeData {
   const grid: Cell[][] = [];
   
   // 1. Initialize grid
@@ -36,6 +45,7 @@ export function generateMaze(rows: number, cols: number): MazeData {
         isDeadEnd: false,
         branchLength: 0,
         decoration: null,
+        pathCoffee: false,
       });
     }
     grid.push(row);
@@ -181,10 +191,40 @@ export function generateMaze(rows: number, cols: number): MazeData {
     de.branchLength = length;
   }
 
-  // 8. Assign decorations
+  // 8. Assign decorations on dead ends
   for (const de of deadEnds) {
     if (Math.random() < COFFEE_DECORATION_RATIO) {
       de.decoration = 'coffee';
+    }
+  }
+
+  // 9. Assign configured number of coffee icons directly on the correct path through the maze
+  if (pathCoffeeCount > 0) {
+    const correctPath = bfsPath(grid, entry, destination);
+    if (correctPath && correctPath.length > 2) {
+      // Exclude entry and destination, and any cells that somehow already have a decoration
+      const candidates = correctPath.slice(1, -1).filter(p => !grid[p.row][p.col].decoration);
+      const countToPlace = Math.min(pathCoffeeCount, candidates.length);
+      if (countToPlace > 0) {
+        const segSize = candidates.length / countToPlace;
+        const chosenIndices = new Set<number>();
+        for (let i = 0; i < countToPlace; i++) {
+          const start = Math.floor(i * segSize);
+          const end = Math.floor((i + 1) * segSize);
+          const range = Math.max(1, end - start);
+          let idx = start + Math.floor(Math.random() * range);
+          idx = Math.min(Math.max(0, idx), candidates.length - 1);
+          while (chosenIndices.has(idx) && chosenIndices.size < candidates.length) {
+            idx = (idx + 1) % candidates.length;
+          }
+          chosenIndices.add(idx);
+        }
+        for (const idx of chosenIndices) {
+          const pos = candidates[idx];
+          grid[pos.row][pos.col].decoration = 'coffee';
+          grid[pos.row][pos.col].pathCoffee = true;
+        }
+      }
     }
   }
 

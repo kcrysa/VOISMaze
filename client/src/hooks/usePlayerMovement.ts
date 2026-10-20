@@ -163,6 +163,9 @@ export function usePlayerMovement(
           steps.push({ row: nextR, col: nextC });
           currR = nextR;
           currC = nextC;
+
+          // Stop movement at a coffee tile so the player lands on it
+          if (grid[nextR][nextC].decoration === 'coffee') break;
         }
 
         if (steps.length === 0) return currentPos;

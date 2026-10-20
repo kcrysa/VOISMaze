@@ -13,6 +13,7 @@ export const CoffeeIcon: React.FC<ICoffeeIcon> = ({ size = "60px", onHover }) =>
       className="icon"
       version="1.1"
       xmlns="http://www.w3.org/2000/svg"
+      onMouseEnter={onHover}
     >
       <path
         d="M287.38 939.53H676.5A20.48 20.48 0 0 1 697 960a20.48 20.48 0 0 1-20.48 20.48H287.38A20.48 20.48 0 0 1 266.9 960a20.48 20.48 0 0 1 20.48-20.47z"

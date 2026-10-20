@@ -15,7 +15,7 @@ interface SuccessPopupProps {
 
 export const SuccessPopup: React.FC<SuccessPopupProps> = ({
   elapsedSeconds,
-  wrongTurns,
+  // wrongTurns,
   onClose,
   icon,
 }) => {
@@ -119,16 +119,13 @@ export const SuccessPopup: React.FC<SuccessPopupProps> = ({
           </div>
         </div>
 
-        <h2 className={styles.title}>You Made It!</h2>
+        <h2 className={styles.title}>Welcome to VOIS!</h2>
         <div className={styles.stats}>
           <p>
             Time:{" "}
             <span className={styles.statValue}>
               {formatTime(elapsedSeconds)}
             </span>
-          </p>
-          <p>
-            Wrong turns: <span className={styles.statValue}>{wrongTurns}</span>
           </p>
         </div>
         <Button onClick={onClose}>Back to Start</Button>

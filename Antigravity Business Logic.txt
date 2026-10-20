@@ -43,3 +43,18 @@ Allow the user to choose the player icon before the game begins. The options sho
 When the user advances through the maze, a colourful trail should appear in the cells which were already visited.
 The trail should use a 3-color horizontal gradient with colors: #E60000 for 60%, #9C2AA0 for 30% and #000000 for 10%. The gradient should be applied to each cell and follow the direction of the player icon.
 The VOIS and CodeCamp icons should be about 100px large to ensure they are fully legible. The maze paths should remain the same width.
+
+
+--------------------------------------
+
+
+Additional Changes:
+
+Besides the coffee icons currently displayed in blocked paths, an additional 3 coffee icons must be available directly on the correct path through the maze.
+When the player icon is on a tile with a coffee icon inside the maze, the FunFactPopup should appear, loading a fun fact from a predefined list which is stored inside the client application as a JSON object.
+The fun facts should be selected randomly from the list inside the application, but they should not be repeated until all the items in the list of available fun facts has been shown.
+Each fun fact in the JSON array will have two fields: playerIcon and funFact.
+The playerIcon field will contain dog or cat values, corresponding to the selected player icon from the beginning of the game. 
+The funFact field will be a string corresponding to the text which will be displayed in the popup.
+When the popup is displayed, the text will be selected from the items corresponding to the selected player icon at the beginning of the game, either cat or dog.
+The popup can be closed when pressing the "Continue" button on the bottom of the window. The game timer should be paused while the user is inside the FunFactPopup.
