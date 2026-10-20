@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { MazeGrid } from "./MazeGrid";
 import { PlayerToken } from "./PlayerToken";
-import { MovementToggle } from "./MovementToggle";
 import { SuccessPopup } from "../popups/SuccessPopup";
 import { AbortPopup } from "../popups/AbortPopup";
 import { FunFactPopup } from "../popups/FunFactPopup";
@@ -34,8 +33,6 @@ interface MazePageProps {
 const GRID_PADDING = CELL_SIZE * 2;
 
 export const MazePage: React.FC<MazePageProps> = ({ onExit, playerIcon }) => {
-  const [movementMode, setMovementMode] = useState<"drag" | "click">("drag");
-  const [showMovementToggle, setShowMovementToggle] = useState<boolean>(true);
   const [gameStatus, setGameStatus] = useState<"playing" | "won" | "aborting">(
     "playing",
   );
@@ -63,15 +60,12 @@ export const MazePage: React.FC<MazePageProps> = ({ onExit, playerIcon }) => {
     mazeData.grid,
     mazeData.entry,
     mazeData.destination,
-    movementMode,
+    "drag",
   );
 
   // Start API session + timer on mount and check environment settings
   useEffect(() => {
-    startGame(playerIcon).then((data) => {
-      if (data && typeof data.showMovementToggle === "boolean") {
-        setShowMovementToggle(data.showMovementToggle);
-      }
+    startGame(playerIcon).then(() => {
       start();
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -205,16 +199,16 @@ export const MazePage: React.FC<MazePageProps> = ({ onExit, playerIcon }) => {
   // Mouse hover over a cell while dragging (desktop)
   const handleCellPointerEnter = useCallback(
     (row: number, col: number) => {
-      if (!isDraggingRef.current || movementMode !== "drag") return;
+      if (!isDraggingRef.current) return;
       stepToCell(row, col);
     },
-    [movementMode, stepToCell],
+    [stepToCell],
   );
 
   // Continuous movement tracking for touch devices and tablets
   const handlePointMove = useCallback(
     (clientX: number, clientY: number) => {
-      if (!isDraggingRef.current || movementMode !== "drag") return;
+      if (!isDraggingRef.current) return;
 
       // 1. Direct hit-test from DOM element under cursor/finger
       const elem = document.elementFromPoint(clientX, clientY);
@@ -231,7 +225,7 @@ export const MazePage: React.FC<MazePageProps> = ({ onExit, playerIcon }) => {
         stepToCell(fallbackCell.row, fallbackCell.col);
       }
     },
-    [movementMode, stepToCell, getCellFromCoords],
+    [stepToCell, getCellFromCoords],
   );
 
   const handleDragStop = useCallback(() => {
@@ -279,9 +273,6 @@ export const MazePage: React.FC<MazePageProps> = ({ onExit, playerIcon }) => {
       {/* ── HUD ── */}
       <div className={styles.hud}>
         <div className={styles.timer}>{formatTime(elapsedSeconds)}</div>
-        {showMovementToggle && (
-          <MovementToggle mode={movementMode} onChange={setMovementMode} />
-        )}
         <Button variant="ghost" onClick={handleQuit}>
           Quit
         </Button>
@@ -299,10 +290,10 @@ export const MazePage: React.FC<MazePageProps> = ({ onExit, playerIcon }) => {
           height={svgHeight}
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
           onPointerDown={() => {
-            if (movementMode === "drag") isDraggingRef.current = true;
+            isDraggingRef.current = true;
           }}
           onTouchStart={() => {
-            if (movementMode === "drag") isDraggingRef.current = true;
+            isDraggingRef.current = true;
           }}
           style={{
             display: "block",
@@ -329,7 +320,7 @@ export const MazePage: React.FC<MazePageProps> = ({ onExit, playerIcon }) => {
             col={playerPos.col}
             cellSize={CELL_SIZE}
             gridPadding={GRID_PADDING}
-            movementMode={movementMode}
+            movementMode={"drag"}
             icon={playerIcon}
           />
         </svg>
