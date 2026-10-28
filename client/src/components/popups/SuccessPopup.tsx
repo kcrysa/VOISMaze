@@ -119,7 +119,7 @@ export const SuccessPopup: React.FC<SuccessPopupProps> = ({
           </div>
         </div>
 
-        <h2 className={styles.title}>Welcome to VOIS!</h2>
+        <h2 className={styles.title}>You Made It!</h2>
         <div className={styles.stats}>
           <p>
             Time:{" "}

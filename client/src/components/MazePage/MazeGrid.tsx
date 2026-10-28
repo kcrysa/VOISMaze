@@ -2,7 +2,7 @@ import React from "react";
 import { WALL_STROKE } from "../../config/mazeConfig";
 import type { Cell, MazeData } from "../../utils/mazeAlgorithm";
 import { CodeCampIcon } from "../icons/CodeCampIcon";
-import { CoffeeIcon } from "../icons/CoffeeIcon";
+import { TreatIcon } from "../icons/TreatIcon";
 import { VOISIcon } from "../icons/VOISIcon";
 
 const LOGO_SIZE = 90;
@@ -79,10 +79,7 @@ export const MazeGrid: React.FC<MazeGridProps> = ({
       {grid.map((row, r) =>
         row.map((_, c) => {
           const idx = visitedMap.get(`${r},${c}`);
-          const fill =
-            idx !== undefined
-              ? "var(--color-primary-dim)"
-              : "var(--color-path-bg)";
+          const fill = idx !== undefined ? "var(--color-primary-dim)" : "var(--color-path-bg)";
 
           return (
             <rect
@@ -115,17 +112,14 @@ export const MazeGrid: React.FC<MazeGridProps> = ({
               opacity={cell.pathCoffee ? 1 : 0.8}
               style={{ pointerEvents: "none" }}
             >
-              <CoffeeIcon onHover={() => {}} />
+              <TreatIcon onHover={() => {}} />
             </g>
           );
         }),
       )}
 
       {/* ── Destination logo (VOIS) ── */}
-      <g
-        transform={`translate(${destLogoX}, ${destLogoY})`}
-        style={{ pointerEvents: "none" }}
-      >
+      <g transform={`translate(${destLogoX}, ${destLogoY})`} style={{ pointerEvents: "none" }}>
         <VOISIcon size={`${LOGO_SIZE}px`} />
       </g>
 
@@ -202,10 +196,7 @@ export const MazeGrid: React.FC<MazeGridProps> = ({
       )}
 
       {/* ── Entry logo (CodeCamp) — drawn last so it renders above walls ── */}
-      <g
-        transform={`translate(${entryLogoX}, ${entryLogoY})`}
-        style={{ pointerEvents: "none" }}
-      >
+      <g transform={`translate(${entryLogoX}, ${entryLogoY})`} style={{ pointerEvents: "none" }}>
         <CodeCampIcon size={`${LOGO_SIZE}px`} />
       </g>
     </g>

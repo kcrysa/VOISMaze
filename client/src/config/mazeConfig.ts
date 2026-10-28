@@ -6,12 +6,9 @@ export const MIN_BRANCH_LENGTH = 10;
 /** Fraction of dead-end cells that receive a coffee decoration (0–1) */
 export const COFFEE_DECORATION_RATIO = 0.3;
 /** Number of coffee icons placed directly on the correct path through the maze */
-export const PATH_COFFEE_COUNT =
-  Number(import.meta.env.VITE_PATH_COFFEE_COUNT) >= 0 && import.meta.env.VITE_PATH_COFFEE_COUNT !== undefined
-    ? Number(import.meta.env.VITE_PATH_COFFEE_COUNT)
-    : 2;
+export const PATH_COFFEE_COUNT = 3;
 /** Max Manhattan distance from center cell for destination placement */
-export const DESTINATION_RADIUS = 10;
+export const DESTINATION_RADIUS = 6;
 /** Cell size in SVG units */
 export const CELL_SIZE = 120;
 /** Wall stroke width in SVG units */
